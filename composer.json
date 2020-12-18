@@ -28,7 +28,6 @@
         "psr-0": { "Pix\\SortableBehaviorBundle": "" },
         "psr-4": { "Pix\\SortableBehaviorBundle": "" }
     },
-    "target-dir": "Pix/SortableBehaviorBundle",
     "extra": {
         "branch-alias": {
             "dev-master": "0.3-dev"
