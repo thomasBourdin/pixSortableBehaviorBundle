@@ -14,7 +14,11 @@ use Doctrine\Common\Util\ClassUtils;
 use Pix\SortableBehaviorBundle\Services\PositionHandler;
 use Sonata\AdminBundle\Controller\CRUDController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Pix\SortableBehaviorBundle\Services\PositionORMHandler;
+use Pix\SortableBehaviorBundle\Services\PositionODMHandler;
+
 
 /**
  * Class SortableAdminController
@@ -23,6 +27,20 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
  */
 class SortableAdminController extends CRUDController
 {
+
+    protected ?PositionHandler $positionHandler = null;
+
+    public function setPositionHandler(PositionHandler $positionHandler): void
+    {
+        $this->positionHandler = $positionHandler;
+    }
+
+    public static function getSubscribedServices(): array
+    {
+        return parent::getSubscribedServices();
+    }
+
+
     /**
      * Move element
      *
@@ -30,7 +48,7 @@ class SortableAdminController extends CRUDController
      *
      * @return RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function moveAction($position)
+    public function moveAction(Request $request, string $position)
     {
         $translator = $this->get('translator');
 
@@ -46,19 +64,17 @@ class SortableAdminController extends CRUDController
             ));
         }
 
-        /** @var PositionHandler $positionHandler */
-        $positionHandler = $this->get('pix_sortable_behavior.position');
         $object          = $this->admin->getSubject();
 
-        $lastPositionNumber = $positionHandler->getLastPosition($object);
-        $newPositionNumber  = $positionHandler->getPosition($object, $position, $lastPositionNumber);
+        $lastPositionNumber = $this->positionHandler->getLastPosition($object);
+        $newPositionNumber  = $this->positionHandler->getPosition($object, $position, $lastPositionNumber);
 
         $accessor = PropertyAccess::createPropertyAccessor();
-        $accessor->setValue($object, $positionHandler->getPositionFieldByEntity($object), $newPositionNumber);
+        $accessor->setValue($object, $this->positionHandler->getPositionFieldByEntity($object), $newPositionNumber);
 
         $this->admin->update($object);
 
-        if ($this->isXmlHttpRequest()) {
+        if ($this->isXmlHttpRequest($request)) {
             return $this->renderJson(array(
                 'result' => 'ok',
                 'objectId' => $this->admin->getNormalizedIdentifier($object)

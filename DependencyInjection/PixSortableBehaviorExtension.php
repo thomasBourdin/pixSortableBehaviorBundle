@@ -12,6 +12,7 @@ namespace Pix\SortableBehaviorBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Alias;
@@ -44,5 +45,9 @@ class PixSortableBehaviorExtension extends Extension
 
         $container->setAlias('pix_sortable_behavior.position', new Alias($positionHandler));
         $container->getAlias('pix_sortable_behavior.position')->setPublic(true);
+
+        $phpLoader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $phpLoader->load('core.php');
+
     }
 }
